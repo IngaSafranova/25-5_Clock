@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 function App() {
 
@@ -9,12 +9,10 @@ const [displayTime, setDisplayTime] = useState(5);
 const [timerOn, setTimerOn] = useState(false);
 const [onBreak, setOnBreak] = useState(false);
 //to get audio file from folder
- const [breakAudio, setBreakAudio] = useState(new Audio("./breakTime.mp3"));
+ const audioElement = document.getElementById("beep");
+ console.log(audioElement);
 
-function playBreakSound() {
-  breakAudio.currentTime = 0;
-  breakAudio.play();
-}
+
 
 const formatTime = (displayTime) => {
 
@@ -60,13 +58,14 @@ function controlTimer() {
         setDisplayTime((prev) => {
 
           if (prev <= 0 && !onBreak) {
-            playBreakSound();
+            audioElement.current.play();
+            audioElement.current.currentTime = 0;
             onBreak = true;
             setOnBreak(true);
             // setSessionLength(25);
             return breakLength;
           } else if (prev <= 0 && onBreak) {
-            playBreakSound();
+            audioElement.current.play();
             onBreak = false;
             setOnBreak(false);
             //setSessionLength(25);
@@ -92,7 +91,9 @@ function resetTimer() {
   setDisplayTime(1500);
   setBreakLength(5 );
   setSessionLength(25 );
-  setBreakAudio(new Audio("./breakTime.mp3"));
+  setTimerOn(false);
+  clearInterval(localStorage.getItem("interval-id"));
+  audioElement.current.load();
 }
 
 
@@ -121,7 +122,8 @@ function resetTimer() {
         resetTimer={resetTimer}
         title={"Session"}
         formatTime={formatTime}
-        playBreakSound={playBreakSound}
+        ref={audioElement.current.play()}
+      
       />
      </div>
     </div> 
@@ -159,7 +161,7 @@ function resetTimer() {
     );
   }
 
-function Timer({displayTime,controlTimer,resetTimer,  title, formatTime}) {
+function Timer({displayTime,controlTimer,resetTimer, ref, title, formatTime}) {
   
   return (
     <div className="timer-wrap"> 
@@ -175,9 +177,13 @@ function Timer({displayTime,controlTimer,resetTimer,  title, formatTime}) {
         <button id="reset" onClick={resetTimer}>
           <i className="fa fa-refresh fa-2x"></i>
         </button>
-        <audio id="beep" >
-          < source src = "../breakTime.mp3" type = "audio/mpeg" />
-        </audio>
+        <audio
+          id="beep"
+          preload="auto"
+          type="audio/mpeg"
+          ref={audioElement}
+          src ="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"
+        />
       </div>
   </div>
   );
