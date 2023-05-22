@@ -1,6 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, {  useState } from "react";
+import useSound from "use-sound";
+
 
 function App() {
+
+  const soundUrl = "https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav";
 
   //to make the state 25 min need to multiply 25*60 sec
 const [breakLength, setBreakLength] = useState(2);
@@ -9,9 +13,7 @@ const [displayTime, setDisplayTime] = useState(5);
 const [timerOn, setTimerOn] = useState(false);
 const [onBreak, setOnBreak] = useState(false);
 //to get audio file from folder
- const audioElement = document.getElementById("beep");
- console.log(audioElement);
-
+ const [play,{pause}] = useSound(soundUrl);
 
 
 const formatTime = (displayTime) => {
@@ -24,6 +26,7 @@ const formatTime = (displayTime) => {
     (seconds < 10 ? "0" + seconds : seconds)
   );
 };
+
 
 
  const changeTime = (amount, type) => {
@@ -58,14 +61,16 @@ function controlTimer() {
         setDisplayTime((prev) => {
 
           if (prev <= 0 && !onBreak) {
-            audioElement.current.play();
-            audioElement.current.currentTime = 0;
+            
+            play.currentTime = 0;
+  play();
             onBreak = true;
             setOnBreak(true);
             // setSessionLength(25);
             return breakLength;
           } else if (prev <= 0 && onBreak) {
-            audioElement.current.play();
+            play.currentTime = 0;
+            play();
             onBreak = false;
             setOnBreak(false);
             //setSessionLength(25);
@@ -93,9 +98,11 @@ function resetTimer() {
   setSessionLength(25 );
   setTimerOn(false);
   clearInterval(localStorage.getItem("interval-id"));
-  audioElement.current.load();
+  resetAudio();
 }
-
+function resetAudio() {
+  pause();
+}
 
   return (
     <div className="App">
@@ -120,9 +127,9 @@ function resetTimer() {
         timerOn={timerOn}
         controlTimer={controlTimer}
         resetTimer={resetTimer}
-        title={"Session"}
+        title={"Session" || "Break"}
         formatTime={formatTime}
-        ref={audioElement.current.play()}
+        ref={play}
       
       />
      </div>
@@ -161,29 +168,29 @@ function resetTimer() {
     );
   }
 
-function Timer({displayTime,controlTimer,resetTimer, ref, title, formatTime}) {
+function Timer({displayTime,controlTimer,resetTimer,onBreak, formatTime}) {
   
   return (
     <div className="timer-wrap"> 
     <div className="timer-container">
-      <h3 id="timer-label">{onBreak? "Break" : "Session"}</h3>
+      <h3 id="timer-label">{onBreak?  "Session" : "Break"}</h3>
       <h2 id="time-left">{formatTime(displayTime)}</h2>
       </div>
       <div className="timer-control">
-        <button id="start_stop" onClick={controlTimer}>
+        <button id="start_stop" onClick={controlTimer } >
           <i className="fa fa-play fa-2x"></i>
           <i className="fa fa-pause fa-2x"></i>
+          <audio
+          id="beep"
+          preload="auto"
+          type="audio/mpeg"
+          
+          src ="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"/>
         </button>
         <button id="reset" onClick={resetTimer}>
           <i className="fa fa-refresh fa-2x"></i>
         </button>
-        <audio
-          id="beep"
-          preload="auto"
-          type="audio/mpeg"
-          ref={audioElement}
-          src ="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"
-        />
+        
       </div>
   </div>
   );
