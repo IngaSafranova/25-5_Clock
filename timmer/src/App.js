@@ -255,5 +255,17 @@ export default function App() {
         </Card.Body>
       </Card>
     </Container>
+          id="beep"
+          preload="auto"
+          type="audio/mpeg"
+          
+          src ="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"/>
+        </button>
+        <button id="reset" onClick={resetTimer}>Reset
+          {/* <i className="fa fa-refresh fa-2x"></i> */}
+        </button>
+        
+      </div>
+  </div>
   );
 }
