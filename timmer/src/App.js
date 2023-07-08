@@ -1,259 +1,259 @@
-import React, {  useState } from "react";
-import useSound from "use-sound";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Card, Container } from "react-bootstrap";
+import {
+  ArrowRepeat,
+  CaretRight,
+  PauseFill,
+  ArrowUp,
+  ArrowDown
+} from "react-bootstrap-icons";
 
+export default function App() {
+  const [displayTime, setDisplayTime] = useState(1500);
+  const [breakTime, setBreakTime] = useState(5);
+  const [sessionTime, setSessionTime] = useState(25);
+  const [timerOn, setTimerOn] = useState(false);
+  const [timerId, setTimerId] = useState("Session");
+  const audioElement = useRef(null);
+  let loop = undefined;
 
-function App() {
+  const formatTime = (time) => {
+    let minutes = Math.floor(time / 60);
+    let seconds = time % 60;
 
-  const soundUrl = "https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav";
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    seconds = seconds < 10 ? "0" + seconds : seconds;
 
-  //to make the state 25 min need to multiply 25*60 sec
-const [breakLength, setBreakLength] = useState(2);
-const [sessionLength, setSessionLength] = useState(3) ;
-const [displayTime, setDisplayTime] = useState(5);
-const [timerOn, setTimerOn] = useState(false);
-const [onBreak, setOnBreak] = useState(false);
-//to get audio file from folder
- const [play,{pause}] = useSound(soundUrl);
+    return `${minutes}:${seconds}`;
+  };
 
-
-const formatTime = (displayTime) => {
-
-  let minutes = Math.floor(displayTime / 60);
-  let seconds = displayTime - minutes *60;
-  return (
-    (minutes < 10 ? "0" + minutes : minutes) +
-    ":" +
-    (seconds < 10 ? "0" + seconds : seconds)
-  );
-};
-
-
-
- const changeTime = (amount, type) => {
-    if (type === "break") {
-      //check if time not going to be less than 60sec
-      if (breakLength <= 1 && amount < 0) {
-        return;
-      }
-      setBreakLength((prev) => prev + amount);
+  const changeTime = (amount, type) => {
+    let newCount;
+    if (type === "Session") {
+      newCount = sessionTime + amount;
     } else {
-      if (sessionLength <= 1 && amount < 0) {
-        return;
-      }
-      setSessionLength((prev) => prev + amount);
-      if (!timerOn) {
-        setDisplayTime(displayTime + amount);
+      newCount = breakTime + amount;
+    }
+
+    if (newCount > 0 && newCount <= 60 && !timerOn) {
+      type === "Session" ? setSessionTime(newCount) : setBreakTime(newCount);
+      if (type === "Session") {
+        setDisplayTime(newCount * 60);
       }
     }
   };
-function controlTimer() {
-  //make seconds to miliseconds
-  let second = 1000;
-  //get accurate time
-  let date = new Date().getTime();
-  let nextDate = new Date().getTime() + second;
-  let onBreak = false;
 
-  if (!timerOn) {
-    let interval = setInterval(() => {
-      date = new Date().getTime();
-      if (date > nextDate) {
-        setDisplayTime((prev) => {
+  const setActive = () => {
+    setTimerOn(!timerOn);
+  };
 
-          if (prev <= 0 && !onBreak) {
-            
-            play.currentTime = 0;
-  play();
-            onBreak = true;
-            setOnBreak(true);
-            // setSessionLength(25);
-            return breakLength;
-          } else if (prev <= 0 && onBreak) {
-            play.currentTime = 0;
-            play();
-            onBreak = false;
-            setOnBreak(false);
-            //setSessionLength(25);
-            return sessionLength;
-          }
-          return prev - 1;
-        });
-        nextDate += second;
+  useEffect(() => {
+    if (timerOn && displayTime > 0) {
+      const interval = setInterval(() => {
+        setDisplayTime(displayTime - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    } else if (displayTime === 0) {
+      audioElement.current.play();
+      audioElement.current.currentTime = 0;
+
+      //    setTimeout(() => {
+      if (timerId === "Session") {
+        setDisplayTime(breakTime * 60);
+        setTimerId("Break");
       }
-      //interval set to 30 miliseconds to make timer more accurate
-    }, 30);
-    //store id to clear interval
-    localStorage.clear();
-    localStorage.setItem("interval-id", interval);
-  }
-  if (timerOn) {
-    clearInterval(localStorage.getItem("interval-id"));
-  }
-  setTimerOn(!timerOn);
+      if (timerId === "Break") {
+        setDisplayTime(sessionTime * 60);
+        setTimerId("Session");
+      }
+    }
+  }, [breakTime, sessionTime, displayTime, timerId, timerOn]);
 
-}
-function resetTimer() {
-  setDisplayTime(1500);
-  setBreakLength(5 );
-  setSessionLength(25 );
-  setTimerOn(false);
-  clearInterval(localStorage.getItem("interval-id"));
-  resetAudio();
-}
-function resetAudio() {
-  pause();
-}
+  // const setTimerStatus = () => {
+  //   if (timerOn) {
+  //     clearTimeout(loop);
+  //     setTimerOn(false);
+  //   } else {
+  //     setTimerOn(true);
+  //   }
+  //   const secsRemaining = displayTime
+  //     ? displayTime
+  //     : timerId === "Session"
+  //     ? sessionTime
+  //     : breakTime;
+  //   return setDisplayTime(secsRemaining);
+  // };
+
+  // componentWillUnmount() {
+  //   clearInterval(this.loop);
+  // }
+
+  // useEffect(() => {
+  //   if (!timerOn) return;
+  //   loop = setTimeout(() => {
+  //     if (displayTime !== 0) {
+  //       return setDisplayTime(displayTime - 1);
+  //     } else {
+  //       return [
+  //         audioElement.current.play(),
+  //         timerId === "Session"
+  //           ? [setTimerId("Break"), setDisplayTime(breakTime * 60)]
+  //           : [setTimerId("Session"), setDisplayTime(sessionTime * 60)]
+  //         // setTimerId(timerId === "Session" ? "Break" : "Session"),
+  //         // setDisplayTime(
+  //         //   timerId === "Session" ? breakTime * 60 : sessionTime * 60
+  //         // )
+  //       ];
+  //     }
+
+  //     // if (timerId === "Session") {
+  //     //   return [
+  //     //     setDisplayTime(breakTime * 60),
+  //     //     setTimerId("Break"),
+  //     //     audioElement.current.play()
+  //     //   ];
+  //     // }
+  //     // if (timerId === "Break") {
+  //     //   return [
+  //     //     setDisplayTime(sessionTime * 60),
+  //     //     setTimerId("Session"),
+  //     //     audioElement.current.play()
+  //     //   ];
+  //     // }
+  //   }, 100);
+  // }, [timerOn, displayTime, timerId, breakTime, sessionTime]);
+
+  const resetTime = () => {
+    setBreakTime(5);
+    setSessionTime(25);
+    setDisplayTime(1500);
+    setTimerId("Session");
+    setTimerOn(false);
+    clearInterval(loop);
+    audioElement.current.load();
+  };
 
   return (
-    <div className="App">
-      <h1>25 + 5 Clock</h1>
-      <div className="container">
-      <BreakLenght
-        title={"Break Length"}
-        changeTime={changeTime}
-        type={"break"}
-        time={breakLength}
-        
-      />
-      <SessionLenght
-        title={"Session Length"}
-        changeTime={changeTime}
-        type={"session"}
-        time={sessionLength}
-        
-      />
-      <Timer
-        displayTime={displayTime}
-        timerOn={timerOn}
-        controlTimer={controlTimer}
-        resetTimer={resetTimer}
-        title={"Session" || "Break"}
-        formatTime={formatTime}
-        ref={play}
-      
-      />
-     </div>
-    </div> 
-  );
-  function BreakLenght({title, changeTime, type}) {
-    return (
-      <div>
-        <h3 id="break-label">{title}</h3>
-        <div className="time-sets">
-          <button id="break-decrement" className="btn-level" value="-" onClick={()=>changeTime(-1,type)}>
-            <i className="fa fa-arrow-down fa-2x"></i>
-          </button>
-           <h3 id="break-length">{breakLength}</h3> 
-          <button id="break-increment" className="btn-level" value="+" onClick={()=>changeTime(+1, type)}>
-            <i className="fa fa-arrow-up fa-2x"></i>
-          </button>
-        </div>
+    <Container className="App">
+      <h1 className=" mb-5 mt-5">Pomodoro Clock</h1>
+      <div className="d-flex">
+        <Card style={{ width: "20rem" }} className="mr-2" id="session-label">
+          <Card.Header style={{ fontSize: 40 }}>Session Length</Card.Header>
+          <Card.Body
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "100px 40px 100px"
+              }}
+            >
+              <Button
+                variant="outline-primary"
+                className="mx-4"
+                id="session-increment"
+                onClick={() => changeTime(1, "Session")}
+              >
+                <ArrowUp color="royalblue" size={20} />
+              </Button>
+              <Card.Text
+                style={{ fontSize: 30 }}
+                className="mb-2 text-muted"
+                id="session-length"
+              >
+                {sessionTime}
+              </Card.Text>
+              <Button
+                variant="outline-primary"
+                className="mx-4"
+                id="session-decrement"
+                onClick={() => changeTime(-1, "Session")}
+              >
+                <ArrowDown color="royalblue" size={20} />
+              </Button>
+            </div>
+          </Card.Body>
+        </Card>
+        <Card style={{ width: "20rem" }} className="mr-2" id="break-label">
+          <Card.Header style={{ fontSize: 40 }}>Break Length</Card.Header>
+          <Card.Body
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "100px 40px 100px"
+              }}
+            >
+              <Button
+                variant="outline-primary"
+                className="mx-4"
+                id="break-increment"
+                onClick={() => changeTime(1, "Break")}
+              >
+                <ArrowUp color="royalblue" size={20} />
+              </Button>
+              <Card.Text
+                style={{ fontSize: 30 }}
+                className="mb-2 text-muted"
+                id="break-length"
+              >
+                {`${breakTime}`}
+              </Card.Text>
+              <Button
+                variant="outline-primary"
+                className="mx-4"
+                id="break-decrement"
+                onClick={() => changeTime(-1, "Break")}
+              >
+                <ArrowDown color="royalblue" size={20} />
+              </Button>
+            </div>
+          </Card.Body>
+        </Card>
       </div>
-    );
-  }
-  function SessionLenght({title, changeTime, type}) {
-    return (
-      <div>
-        <h3 id="session-label">{title}</h3>
-        <div className="time-sets">
-          <button id="session-decrement" className="btn-level" value="-" onClick={()=>changeTime(-1,type)}>
-            <i className="fa fa-arrow-down fa-2x"></i>
-          </button>
-           <h3 id="session-length">{sessionLength}</h3> 
-          <button id="session-increment" className="btn-level" value="+" onClick={()=>changeTime(+1, type)}>
-            <i className="fa fa-arrow-up fa-2x"></i>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-function Timer({displayTime,controlTimer,resetTimer,onBreak, formatTime}) {
-  
-  return (
-    <div className="timer-wrap"> 
-    <div className="timer-container">
-      <h3 id="timer-label">{onBreak?  "Session" : "Break"}</h3>
-      <h2 id="time-left">{formatTime(displayTime)}</h2>
-      </div>
-      <div className="timer-control">
-        <button id="start_stop" onClick={controlTimer } >
-          <i className="fa fa-play fa-2x"></i>
-          <i className="fa fa-pause fa-2x"></i>
+      <Card style={{ width: "18rem" }} className="mt-4">
+        <Card.Body>
+          <h2 id="timer-label">{timerId}</h2>
+          <Card.Title style={{ fontSize: 48 }} id="time-left">
+            {formatTime(displayTime)}
+          </Card.Title>
+          <Button
+            variant="outline-primary"
+            className="mx-2"
+            id="start_stop"
+            onClick={setActive}
+          >
+            {timerOn ? (
+              <PauseFill color="royalblue" size={28} />
+            ) : (
+              <CaretRight color="royalblue" size={28} />
+            )}
+          </Button>
+          <Button
+            variant="outline-primary"
+            className="mx-2"
+            id="reset"
+            onClick={resetTime}
+          >
+            <ArrowRepeat color="royalblue" size={28} />
+          </Button>
           <audio
-          id="beep"
-          preload="auto"
-          type="audio/mpeg"
-          
-          src ="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"/>
-        </button>
-        <button id="reset" onClick={resetTimer}>
-          <i className="fa fa-refresh fa-2x"></i>
-        </button>
-        
-      </div>
-  </div>
+            id="beep"
+            type="audio/mpeg"
+            src="./Alarm.mp3"
+            ref={audioElement}
+          />
+        </Card.Body>
+      </Card>
+    </Container>
   );
-  }
-
-
-
-
-
-
 }
-
-export default App;
-
-// function App() {
-//   const [breakLength, setBreakLength] = React.useState(5 * 60);
-
-//   //to make the state 25 min need to multiply 25*60 sec
-//   const [sessionLength, setSessionLength] = React.useState(25 * 60);
-//   // const [timerMinute, setTimerMinute] = React.useState(25);
-//   // const [intervalId, setIntervalId] = React.useState(null);
-//   // const [currentTimer, setCurrentTimer] = React.useState('Session');
-//   // const [isPlay, setIsPlay] = React.useState(false);
-//   // const [timerSecond, setTimerSecond] = React.useState(0);
-
-//   const formatTime = (time) => {
-//     let minutes = Math.floor(time / 60);
-//     let seconds = time % 60;
-//     return (
-//       (minutes < 10 ? "0" + minutes : minutes) +
-//       ":" +
-//       (seconds < 10 ? "0" + seconds : seconds)
-//     );
-//   };
-//   return (
-//     <div className="App">
-//       <h1>25 + 5 Clock</h1>
-//       <BreakLenght
-//         title={"Break Length"}
-//         changeTime={null}
-//         type={"break"}
-//         time={breakLength}
-//         formatTime={formatTime}
-//       />
-//       <h2>{formatTime(sessionLength)}</h2>
-//     </div>
-//   );
-//   function BreakLenght(title, changeTime, type, time, formatTime) {
-//     return (
-//       <div>
-//         <h3 id="break-label">{title}</h3>
-//         <div className="time-sets">
-//           <button id="break-decrement" className="btn-level" value="-">
-//             <i className="fa fa-arrow-down fa-2x"></i>
-//           </button>
-//           <h3 id="break-length">{formatTime(time)}</h3>
-//           <button id="break-increment" className="btn-level" value="+">
-//             <i className="fa fa-arrow-up fa-2x"></i>
-//           </button>
-//         </div>
-//       </div>
-//     );
-//   }
-// }
-
-// export default App;

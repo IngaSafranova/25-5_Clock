@@ -1,9 +1,10 @@
 body {
   box-sizing: border-box;
-
+background-color: lightseagreen;
   justify-content: center;
   text-align: center;
 }
+
 .container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -20,22 +21,18 @@ body {
   align-items: center;
   
 }
-.timer-wrap {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  justify-items: center;
-  align-items: center;
-  margin-top: 20px;
-}
+
 .timer-container {
   border: 1px solid black;
   border-radius:35px;
   width: 250px;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-left: 300px;
+  margin-left: 600px;
   margin-top: 50px;
+  margin-bottom: 10px;
 }
 .timer-controls {
   display: flex;
