@@ -1,47 +1,53 @@
 body {
   box-sizing: border-box;
+  background-color: black;
+  color: aliceblue;
 
-  justify-content: center;
+}
+main {
+  padding-top: 70px;
+  max-width: 540px;
+  margin: 0 auto;
   text-align: center;
 }
-.container {
+h2 {
+  font-size: 50px;
+}
+button {
+  background-color: transparent;
+  color: aliceblue;
+  border: 0;
+  display: inline-block;
+  width: 100px;
+  cursor: pointer;
+}
+.btn {
+  width: 50px;
+}
+.controls-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: 60%;
-  margin:auto;
+  grid-template-columns: 50px 70px 50px;
   justify-items: center;
   align-items: center;
-  
 }
-.time-sets {
-  display: grid;
-  grid-template-columns: 50px 200px 50px;
-  justify-items: center;
-  align-items: center;
-  
-}
-.timer-wrap {
+.settings {
+  margin-top: 40px;
+  margin-bottom: 30px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  justify-items: center;
-  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-inline: 20px;
+  font-size: 20px;
+}
+.timer {
+  border: 2px solid white;
+  width: 300px;
+  border-radius: 30px;
+  margin: 0 auto;
+}
+#time-left {
+  font-size: 30px;
+}
+.buttons {
   margin-top: 20px;
-}
-.timer-container {
-  border: 1px solid black;
-  border-radius:35px;
-  width: 250px;
-  justify-content: center;
-  align-items: center;
-  margin-left: 300px;
-  margin-top: 50px;
-}
-.timer-controls {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  justify-items: center;
-  align-items: center;
-  
 }
